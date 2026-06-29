@@ -51,7 +51,7 @@ const speakers: Speaker[] = [
       'Hábitos para liderar tu marca con más confianza.',
     ],
     initials: 'KM',
-    image: '/assets/speakers/katia.png',
+    image: '/assets/speakers/katia.jpeg',
   },
   {
     id: 'maida',
