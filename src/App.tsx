@@ -1,597 +1,611 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 
-type Speaker = {
-  id: string
-  number: string
-  name: string
-  role: string
-  visiblePhrase: string
-  buttonLabel: string
-  talkTitle: string
-  description: string
-  takeaways: string[]
-  initials: string
-  image: string
-  variant?: 'ai'
-}
-
-const speakers: Speaker[] = [
-  {
-    id: 'leslie',
-    number: '01',
-    name: 'Leslie Langenbach',
-    role: 'Mentora Estratégica de Marca Personal',
-    visiblePhrase: 'Estrategia para pasar de invisible a referente.',
-    buttonLabel: 'Conócela',
-    talkTitle: 'De invisible a Referente',
-    description:
-      'Estrategias de visibilidad, diferenciación y posicionamiento para fortalecer una marca personal sólida, auténtica y capaz de generar confianza, conexiones y nuevas oportunidades.',
-    takeaways: [
-      'Claridad sobre los pilares de una marca personal sólida.',
-      'Herramientas para diferenciarte con intención.',
-      'Un mapa inicial para comenzar a posicionarte como referente.',
-    ],
-    initials: 'LL',
-    image: '/assets/speakers/leslie.png',
-  },
-  {
-    id: 'katia',
-    number: '02',
-    name: 'Katia Mendizábal',
-    role: 'Coach de Mentalidad y Bienestar',
-    visiblePhrase: 'Mentalidad para sostener tu crecimiento.',
-    buttonLabel: 'Conócela',
-    talkTitle: 'Mentalidad detrás de una marca influyente',
-    description:
-      'Herramientas internas para fortalecer la confianza, gestionar la energía y sostener la visibilidad en el tiempo con coherencia y constancia.',
-    takeaways: [
-      'Herramientas para fortalecer una mentalidad de crecimiento.',
-      'Estrategias para gestionar tu energía.',
-      'Hábitos para liderar tu marca con más confianza.',
-    ],
-    initials: 'KM',
-    image: '/assets/speakers/katia.jpeg',
-  },
-  {
-    id: 'maida',
-    number: '03',
-    name: 'Maida Subercaseaux',
-    role: 'Asesora de Imagen y Estilismo Estratégico',
-    visiblePhrase: 'Imagen personal como herramienta de posicionamiento.',
-    buttonLabel: 'Conócela',
-    talkTitle: 'Proyecta una imagen que respalde el valor de tu marca',
-    description:
-      'Una mirada estratégica sobre cómo alinear tu presencia, imagen y primera impresión con el mensaje profesional que deseas comunicar.',
-    takeaways: [
-      'Claridad sobre la imagen que quieres proyectar.',
-      'Herramientas para comunicar confianza desde el primer encuentro.',
-      'Una nueva mirada sobre el impacto de tu presencia profesional.',
-    ],
-    initials: 'MS',
-    image: '/assets/speakers/maida.png',
-  },
-  {
-    id: 'dennis',
-    number: '04',
-    name: 'Dennis Velis',
-    role: 'Marketing y Visibilidad Estratégica',
-    visiblePhrase: 'Haz que tu marca llegue a las personas correctas.',
-    buttonLabel: 'Conócelo',
-    talkTitle: 'Haz que tu marca llegue a las personas correctas',
-    description:
-      'Presencia digital estratégica para que tu marca sea encontrada, recordada y elegida, aumentando visibilidad sin perder autenticidad.',
-    takeaways: [
-      'Una visión más estratégica de tu presencia digital.',
-      'Claridad sobre los canales que realmente impulsan tu marca.',
-      'Ideas prácticas para aumentar tu visibilidad con intención.',
-    ],
-    initials: 'DV',
-    image: '/assets/speakers/dennis.png',
-  },
-  {
-    id: 'marco',
-    number: '05',
-    name: 'Marco Iglesias',
-    role: 'Master y Divulgador de Inteligencia Artificial',
-    visiblePhrase: 'IA para potenciar tu marca sin perder tu voz.',
-    buttonLabel: 'Conócelo',
-    talkTitle: 'La Inteligencia Artificial como la mejor aliada de tu marca',
-    description:
-      'La Inteligencia Artificial no viene a reemplazar tu esencia. Viene a darte más tiempo para potenciarla. Aprenderás cómo integrar herramientas de IA para optimizar procesos, crear contenido con mayor eficiencia y fortalecer tu posicionamiento, manteniendo una comunicación auténtica y alineada con tu identidad.',
-    takeaways: [
-      'Nuevas formas de ahorrar tiempo en la creación de contenido.',
-      'Herramientas para amplificar tu visibilidad con IA.',
-      'Una mirada práctica sobre cómo usar tecnología sin perder tu voz.',
-    ],
-    initials: 'MI',
-    image: '/assets/speakers/marco.png',
-    variant: 'ai',
-  },
-  {
-    id: 'valeska',
-    number: '06',
-    name: 'Valeska Morales',
-    role: 'Fotógrafa de Marca Personal · Nina Home Studio',
-    visiblePhrase: 'Tu imagen también comunica.',
-    buttonLabel: 'Conócela',
-    talkTitle: 'Tu imagen también comunica',
-    description:
-      'Sesión fotográfica estratégica de marca personal con dirección de imagen para comunicar autenticidad, confianza y coherencia con tu marca.',
-    takeaways: [
-      'Una sesión fotográfica alineada con tu identidad y propósito.',
-      'Imágenes profesionales listas para potenciar tu presencia digital.',
-      'Dirección de imagen para proyectar seguridad y coherencia.',
-    ],
-    initials: 'VM',
-    image: '/assets/speakers/valeska.png',
-  },
-]
-
-const navItems = [
-  { href: '#inicio', label: 'Inicio' },
-  { href: '#experiencia', label: 'Experiencia' },
-  { href: '#relatores', label: 'Relatores' },
-  { href: '#inversion', label: 'Inversión' },
-  { href: '#ubicacion', label: 'Ubicación' },
-]
+const TOTAL_FRAMES = 241
 
 function App() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [selectedSpeaker, setSelectedSpeaker] = useState<Speaker | null>(null)
+  const trackRef = useRef<HTMLDivElement | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const imagesRef = useRef<HTMLImageElement[]>([])
+  const currentFrameRef = useRef<number>(1)
+  const targetFrameRef = useRef<number>(1)
+  const animFrameIdRef = useRef<number | null>(null)
 
-  const closeMenu = () => setIsMenuOpen(false)
-  const closeSpeakerModal = () => setSelectedSpeaker(null)
+  const [loadedCount, setLoadedCount] = useState<number>(0)
+  const [scrollProgress, setScrollProgress] = useState<number>(0)
+  const [isContactOpen, setIsContactOpen] = useState(false)
+  const [contactSubmitted, setContactSubmitted] = useState(false)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [note, setNote] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+
+    try {
+      await fetch('https://formsubmit.co/ajax/surinnovacion7@gmail.com', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          Nombre: name,
+          Email: email,
+          Telefono_WhatsApp: phone,
+          Mensaje: note || 'Solicitud de contacto desde landing Marca Personal',
+          _subject: `Nuevo Lead Marca Personal: ${name}`,
+          _template: 'table',
+        }),
+      })
+      setContactSubmitted(true)
+    } catch {
+      setContactSubmitted(true)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // Preload all 241 frames into memory
+  useEffect(() => {
+    let active = true
+    const imageList: HTMLImageElement[] = []
+    let loaded = 0
+
+    // Load first frame immediately
+    const firstImg = new Image()
+    firstImg.src = '/frames/frame_001.jpg'
+    firstImg.onload = () => {
+      if (!active) return
+      loaded++
+      setLoadedCount(loaded)
+      drawFrame(1)
+    }
+    imageList[1] = firstImg
+
+    // Load remaining frames
+    for (let i = 2; i <= TOTAL_FRAMES; i++) {
+      const img = new Image()
+      const pad = String(i).padStart(3, '0')
+      img.src = `/frames/frame_${pad}.jpg`
+      img.onload = () => {
+        if (!active) return
+        loaded++
+        setLoadedCount(loaded)
+      }
+      imageList[i] = img
+    }
+
+    imagesRef.current = imageList
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  // Draw frame on canvas with responsive cover
+  const drawFrame = (frameIndex: number) => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const clampedIndex = Math.max(1, Math.min(TOTAL_FRAMES, Math.round(frameIndex)))
+    let img = imagesRef.current[clampedIndex]
+
+    if (!img || !img.complete || img.naturalWidth === 0) {
+      for (let offset = 1; offset < TOTAL_FRAMES; offset++) {
+        const prev = imagesRef.current[clampedIndex - offset]
+        if (prev && prev.complete && prev.naturalWidth > 0) {
+          img = prev
+          break
+        }
+        const next = imagesRef.current[clampedIndex + offset]
+        if (next && next.complete && next.naturalWidth > 0) {
+          img = next
+          break
+        }
+      }
+    }
+    if (!img || !img.complete || img.naturalWidth === 0) {
+      img = imagesRef.current[1]
+    }
+    if (!img || !img.complete || img.naturalWidth === 0) return
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    const displayWidth = window.innerWidth
+    const displayHeight = window.innerHeight
+
+    if (canvas.width !== displayWidth * dpr || canvas.height !== displayHeight * dpr) {
+      canvas.width = displayWidth * dpr
+      canvas.height = displayHeight * dpr
+    }
+
+    ctx.save()
+    ctx.scale(dpr, dpr)
+
+    const iw = img.naturalWidth
+    const ih = img.naturalHeight
+    const scale = Math.max(displayWidth / iw, displayHeight / ih)
+    const nw = iw * scale
+    const nh = ih * scale
+    const nx = (displayWidth - nw) / 2
+    const ny = (displayHeight - nh) / 2
+
+    ctx.clearRect(0, 0, displayWidth, displayHeight)
+    ctx.drawImage(img, nx, ny, nw, nh)
+    ctx.restore()
+  }
+
+  // 60fps lerp loop for smooth forward and reverse video playback
+  useEffect(() => {
+    const loop = () => {
+      const diff = targetFrameRef.current - currentFrameRef.current
+      if (Math.abs(diff) > 0.01) {
+        currentFrameRef.current += diff * 0.16
+        drawFrame(currentFrameRef.current)
+      }
+      animFrameIdRef.current = requestAnimationFrame(loop)
+    }
+
+    animFrameIdRef.current = requestAnimationFrame(loop)
+
+    return () => {
+      if (animFrameIdRef.current) {
+        cancelAnimationFrame(animFrameIdRef.current)
+      }
+    }
+  }, [])
+
+  // Sync window scroll with the entire 241-frame video track
+  useEffect(() => {
+    const handleScroll = () => {
+      const track = trackRef.current
+      if (!track) return
+
+      const trackScrollable = track.offsetHeight - window.innerHeight
+      if (trackScrollable <= 0) return
+
+      const scrollY = window.scrollY
+      const progress = Math.max(0, Math.min(1, scrollY / trackScrollable))
+
+      targetFrameRef.current = 1 + progress * (TOTAL_FRAMES - 1)
+      setScrollProgress(progress)
+    }
+
+    const handleResize = () => {
+      drawFrame(currentFrameRef.current)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('resize', handleResize)
+
+    handleScroll()
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
+
+  const scrollToPercentage = (percent: number) => {
+    const track = trackRef.current
+    if (!track) return
+    const trackScrollable = track.offsetHeight - window.innerHeight
+    window.scrollTo({
+      top: trackScrollable * percent,
+      behavior: 'smooth',
+    })
+  }
+
+  const scrollToFooter = () => {
+    const footer = document.getElementById('contacto')
+    if (footer) {
+      footer.scrollIntoView({ behavior: 'smooth' })
+    } else {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'smooth',
+      })
+    }
+  }
+
+  // Limbo style: Hero is visible immediately at 100%, and each act transitions cleanly
+  const getLimboStyle = (start: number, end: number, isFirst = false) => {
+    let opacity = 0
+    let translateY = 18
+
+    if (isFirst) {
+      if (scrollProgress <= start) {
+        opacity = 1
+        translateY = 0
+      } else if (scrollProgress < end) {
+        const fadeOutStart = end - 0.06
+        if (scrollProgress < fadeOutStart) {
+          opacity = 1
+          translateY = 0
+        } else {
+          const factor = (end - scrollProgress) / (end - fadeOutStart)
+          opacity = Math.max(0, Math.min(1, factor))
+          translateY = (1 - factor) * -18
+        }
+      }
+    } else {
+      const fadeInEnd = start + 0.05
+      const fadeOutStart = end - 0.05
+
+      if (scrollProgress >= start && scrollProgress <= end) {
+        if (scrollProgress < fadeInEnd) {
+          const factor = (scrollProgress - start) / (fadeInEnd - start)
+          opacity = Math.max(0, Math.min(1, factor))
+          translateY = (1 - factor) * 18
+        } else if (scrollProgress > fadeOutStart) {
+          const factor = (end - scrollProgress) / (end - fadeOutStart)
+          opacity = Math.max(0, Math.min(1, factor))
+          translateY = (factor - 1) * 18
+        } else {
+          opacity = 1
+          translateY = 0
+        }
+      }
+    }
+
+    return {
+      opacity,
+      transform: `translate3d(0, ${translateY}px, 0)`,
+      pointerEvents: (opacity > 0.3 ? 'auto' : 'none') as 'auto' | 'none',
+      visibility: (opacity > 0.01 ? 'visible' : 'hidden') as 'visible' | 'hidden',
+    }
+  }
 
   return (
-    <div className="site-shell">
-      <header className="site-header" aria-label="Navegación principal">
-        <a className="brand" href="#inicio" onClick={closeMenu} aria-label="Marca Visible - Inicio">
-          <span>Marca Visible</span>
-        </a>
+    <div className="scrolly-root">
+      {/* Background Canvas: Fixed full viewport */}
+      <div className="canvas-wrapper" aria-hidden="true">
+        <canvas ref={canvasRef} className="scrolly-canvas" />
+        <div className="cinematic-vignette" />
+      </div>
 
+      {/* Floating Glass Header */}
+      <header className="site-header" aria-label="Navegación principal">
         <button
-          className="menu-toggle"
+          className="brand-button"
           type="button"
-          aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
-          aria-expanded={isMenuOpen}
-          aria-controls="main-navigation"
-          onClick={() => setIsMenuOpen((open) => !open)}
+          onClick={() => scrollToPercentage(0)}
+          aria-label="Volver al inicio"
         >
-          <span />
-          <span />
+          <span className="brand-dot" />
+          <span className="brand-text">Marca Personal</span>
         </button>
 
-        <nav id="main-navigation" className={isMenuOpen ? 'nav is-open' : 'nav'}>
-          {navItems.map((item) => (
-            <a key={item.href} href={item.href} onClick={closeMenu}>
-              {item.label}
-            </a>
-          ))}
-          <a className="nav-cta" href="#inversion" onClick={closeMenu}>
-            Reservar cupo
-          </a>
+        <nav className="nav" id="main-navigation">
+          <button type="button" onClick={() => scrollToPercentage(0)}>
+            Inicio
+          </button>
+          <button type="button" onClick={() => scrollToPercentage(0.3)}>
+            Posicionamiento
+          </button>
+          <button type="button" onClick={() => scrollToPercentage(0.6)}>
+            Impacto
+          </button>
+          <button type="button" onClick={scrollToFooter}>
+            Contacto
+          </button>
         </nav>
+
+        <div className="header-actions">
+          <button
+            type="button"
+            className="header-cta"
+            onClick={() => setIsContactOpen(true)}
+          >
+            Conectar
+          </button>
+        </div>
       </header>
 
-      <main>
-        <section id="inicio" className="hero-section" aria-labelledby="hero-title">
-          <div className="hero-ambient" aria-hidden="true">
-            <div className="hero-image-placeholder" />
-          </div>
-          <div className="hero-overlay" aria-hidden="true" />
+      {/* Discreet Scroll Progress Line */}
+      <div className="scroll-indicator-bar" style={{ width: `${scrollProgress * 100}%` }} />
 
-          <div className="hero-content reveal-ready">
-            <p className="eyebrow">Experiencia boutique de marca personal</p>
-            <h1 id="hero-title">Marca Visible</h1>
-            <p className="hero-kicker">De invisible a Referente</p>
-            <p className="hero-copy">
-              Una mañana íntima, estratégica y cuidadosamente diseñada para transformar tu
-              experiencia en una marca capaz de abrir nuevas oportunidades.
-            </p>
-
-            <div className="event-facts" aria-label="Datos principales del evento">
-              <span>Sábado 18 de julio</span>
-              <span>09:30 a 14:30 hrs</span>
-              <span>Anahata Lodge · Puerto Varas</span>
-            </div>
-
-            <div className="hero-actions">
-              <a className="button button-primary" href="#inversion">
-                Reservar cupo Early Bird
-              </a>
-              <a className="button button-secondary" href="#experiencia">
-                Ver la experiencia
-              </a>
-            </div>
-          </div>
-        </section>
-
-        <section id="experiencia" className="problem-section section-pad" aria-labelledby="problem-title">
-          <div className="section-inner problem-layout">
-            <div className="section-heading-block">
-              <p className="eyebrow dark">El punto de partida</p>
-              <h2 id="problem-title">Tu marca puede estar diciendo menos de lo que realmente vales</h2>
-              <p>
-                Tienes experiencia, conocimiento y trayectoria. Pero tu marca necesita comunicarlo
-                con más claridad, confianza y estrategia.
-              </p>
-            </div>
-
-            <div className="signal-cards" aria-label="Situaciones que aborda Marca Visible">
-              <article className="signal-card">
-                <span>01</span>
-                <p>Publicas, pero sin una dirección clara.</p>
-              </article>
-              <article className="signal-card">
-                <span>02</span>
-                <p>Te cuesta diferenciarte en un mercado cada vez más visible.</p>
-              </article>
-              <article className="signal-card">
-                <span>03</span>
-                <p>Sabes que tienes mucho que aportar, pero tu marca aún no lo refleja.</p>
-              </article>
-            </div>
-
-            <p className="alignment-note">
-              Marca Visible nace para alinear identidad, imagen, mentalidad, comunicación,
-              estrategia y tecnología.
-            </p>
-          </div>
-        </section>
-
-        <section className="dimensions-section section-pad" aria-labelledby="dimensions-title">
-          <div className="section-inner">
-            <div className="section-heading-block centered">
-              <p className="eyebrow dark">Lo que vivirás</p>
-              <h2 id="dimensions-title">Una experiencia diseñada para activar tu marca desde tres dimensiones</h2>
-            </div>
-
-            <div className="dimension-cards">
-              <article className="dimension-card">
-                <div className="line-icon" aria-hidden="true">
-                  <svg viewBox="0 0 48 48" role="presentation">
-                    <path d="M24 7c7 0 12 5 12 12 0 8-6 13-12 22C18 32 12 27 12 19c0-7 5-12 12-12Z" />
-                    <path d="M19 21c2.4 2.2 7.4 2.2 10 0" />
-                  </svg>
-                </div>
-                <span className="dimension-number">01</span>
-                <h3>SER</h3>
-                <p>Claridad sobre quién eres y el valor que entregas.</p>
-              </article>
-
-              <article className="dimension-card featured">
-                <div className="line-icon" aria-hidden="true">
-                  <svg viewBox="0 0 48 48" role="presentation">
-                    <path d="M9 36c7-16 16-24 30-24" />
-                    <path d="M14 36h25" />
-                    <path d="M31 12h8v8" />
-                  </svg>
-                </div>
-                <span className="dimension-number">02</span>
-                <h3>PROYECTAR</h3>
-                <p>Una imagen que refleje la profesional que ya eres.</p>
-              </article>
-
-              <article className="dimension-card">
-                <div className="line-icon" aria-hidden="true">
-                  <svg viewBox="0 0 48 48" role="presentation">
-                    <path d="M8 25h13" />
-                    <path d="M27 25h13" />
-                    <path d="M24 8v13" />
-                    <path d="M24 27v13" />
-                    <circle cx="24" cy="24" r="5" />
-                  </svg>
-                </div>
-                <span className="dimension-number">03</span>
-                <h3>POSICIONAR</h3>
-                <p>Comunicación estratégica para generar oportunidades.</p>
-              </article>
-            </div>
-          </div>
-        </section>
-
-        <section id="relatores" className="speakers-section section-pad" aria-labelledby="speakers-title">
-          <div className="section-inner">
-            <div className="section-heading-block centered">
-              <p className="eyebrow dark">El viaje Marca Visible</p>
-              <h2 id="speakers-title">Relatores que acompañan cada etapa de tu marca</h2>
-              <p>
-                Cada relator representa una etapa clave para transformar tu experiencia en una marca
-                visible, coherente y estratégica.
-              </p>
-            </div>
-
-            <div className="speaker-grid">
-              {speakers.map((speaker) => (
-                <article className="speaker-card" key={speaker.id}>
-                  <div className="speaker-content">
-                    <span className="speaker-stage">{speaker.number}</span>
-                    <h3>{speaker.name}</h3>
-                    <p className="speaker-role">{speaker.role}</p>
-                    <button
-                      className="speaker-button"
-                      type="button"
-                      onClick={() => setSelectedSpeaker(speaker)}
-                      aria-label={`${speaker.buttonLabel}: ${speaker.name}`}
-                    >
-                      {speaker.buttonLabel}
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="ai-feature-section section-pad" aria-labelledby="ai-title">
-          <div className="section-inner ai-feature-card">
-            <div className="ai-copy">
-              <p className="eyebrow ai-eyebrow">IA aplicada a marca personal, contenido y posicionamiento</p>
-              <h2 id="ai-title">Tecnología con identidad: IA para potenciar tu marca sin perder tu voz</h2>
-              <p className="ai-subtitle">
-                Con Marco Iglesias, Master y Divulgador de Inteligencia Artificial
-              </p>
-              <p className="ai-description">
-                Aprende a usar la Inteligencia Artificial para ordenar ideas, crear contenido con más
-                eficiencia y amplificar tu visibilidad sin perder autenticidad.
-              </p>
-              <div className="ai-points">
-                <span>Crea contenido con más foco.</span>
-                <span>Ahorra tiempo sin perder calidad.</span>
-                <span>Amplifica tu mensaje con estrategia.</span>
-                <span>Usa IA sin perder tu voz.</span>
-              </div>
-            </div>
-
-            <div className="ai-visual" aria-label="Marco Iglesias">
-              <div className="ai-orbit" aria-hidden="true" />
-              <img className="ai-photo" src="/assets/speakers/marco.png" alt="Marco Iglesias" />
-              <p>Marco Iglesias</p>
-            </div>
-          </div>
-        </section>
-
-        {selectedSpeaker && (
-          <div
-            className="modal-backdrop"
-            role="presentation"
-            onClick={closeSpeakerModal}
-          >
-            <section
-              className={selectedSpeaker.variant === 'ai' ? 'speaker-modal ai-modal' : 'speaker-modal'}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="speaker-modal-title"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <button
-                className="modal-close"
-                type="button"
-                onClick={closeSpeakerModal}
-                aria-label="Cerrar información del relator"
-              >
-                ×
-              </button>
-              <div className="modal-portrait">
-                <img src={selectedSpeaker.image} alt={`Fotografía de ${selectedSpeaker.name}`} />
-              </div>
-              <div className="modal-copy">
-                <p className="speaker-stage">Etapa {selectedSpeaker.number}</p>
-                <h2 id="speaker-modal-title">{selectedSpeaker.talkTitle}</h2>
-                <p className="modal-speaker-name">{selectedSpeaker.name} · {selectedSpeaker.role}</p>
-                <p className="modal-description">{selectedSpeaker.description}</p>
-                <h3>Te llevarás</h3>
-                <ul>
-                  {selectedSpeaker.takeaways.map((takeaway) => (
-                    <li key={takeaway}>{takeaway}</li>
-                  ))}
-                </ul>
-              </div>
-            </section>
-          </div>
-        )}
-
-        <section id="presencial" className="presence-section section-pad" aria-labelledby="presence-title">
-          <div className="section-inner presence-layout">
-            <div className="section-heading-block">
-              <p className="eyebrow dark">Experiencia presencial</p>
-              <h2 id="presence-title">Una experiencia boutique en un entorno diseñado para inspirarte</h2>
-              <p>
-                Marca Visible no es solo una jornada de charlas. Es una experiencia presencial
-                para conectar, reflexionar, compartir y abrir nuevas oportunidades.
-              </p>
-            </div>
-
-            <div className="experience-tags" aria-label="Elementos de la experiencia presencial">
-              <span>Charlas breves de alto impacto</span>
-              <span>Networking con propósito</span>
-              <span>Coffee Boutique</span>
-              <span>Experiencia sensorial</span>
-              <span>Comunidad privada</span>
-              <span>Kit digital post evento</span>
-              <span>Fotografía profesional según ticket</span>
-            </div>
-
-            <div className="lodge-gallery" aria-label="Galería de Anahata Lodge">
-              <figure className="gallery-card gallery-card-large">
-                <img src="/assets/lodge/Imagen1.png" alt="Entorno natural de Anahata Lodge" />
-                <figcaption>Naturaleza y pausa</figcaption>
-              </figure>
-              <figure className="gallery-card">
-                <img src="/assets/lodge/Imagen2.png" alt="Espacio interior cálido del lugar" />
-                <figcaption>Calidez para conversar</figcaption>
-              </figure>
-              <figure className="gallery-card">
-                <img src="/assets/lodge/Imagen3.png" alt="Ambiente preparado para una experiencia boutique" />
-                <figcaption>Un encuentro cuidado</figcaption>
-              </figure>
-            </div>
-          </div>
-        </section>
-
-        <section id="inversion" className="investment-section section-pad" aria-labelledby="investment-title">
-          <div className="section-inner">
-            <div className="section-heading-block centered">
-              <p className="eyebrow dark">Inversión</p>
-              <h2 id="investment-title">Elige tu experiencia</h2>
-              <p>
-                Valor de lanzamiento Early Bird disponible hasta el 10 de julio o hasta agotar cupos.
-              </p>
-            </div>
-
-            <div className="ticket-grid">
-              <article className="ticket-card">
-                <div className="ticket-main">
-                  <p className="ticket-label">Experiencia Esencia</p>
-                  <h3>Early Bird: $35.000 CLP</h3>
-                  <p className="ticket-cups">10 cupos Early Bird</p>
-                  <ul className="ticket-benefits">
-                    <li>Experiencias Marca Visible.</li>
-                    <li>Networking con propósito.</li>
-                    <li>Coffee Boutique.</li>
-                    <li>Kit digital post evento.</li>
-                    <li>Comunidad privada.</li>
-                  </ul>
-                  <details className="ticket-details">
-                    <summary>Ver todo lo que incluye</summary>
-                    <p>
-                      Acceso a la jornada presencial, charlas de alto impacto, networking guiado,
-                      material digital y comunidad privada para seguir aplicando lo aprendido.
-                    </p>
-                  </details>
-                  <a
-                    className="button ticket-button"
-                    href="https://www.flow.cl/btn.php?token=ja543df080c6616fb55c37cf819a1fa1c0bc0994"
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="Pagar Experiencia Esencia en Flow"
+      {/* TRACK DE SCROLL: EL VIDEO COMPLETO TRANSCURRE AQUÍ (500vh) */}
+      <div className="scroll-track" ref={trackRef}>
+        <div className="stage-sticky-container">
+          <div className="limbo-container">
+            {/* ACTO 01: EL ENFOQUE (Cabina del avión · 0% - 24%) */}
+            <div className="limbo-act left-aligned" style={getLimboStyle(0, 0.25, true)}>
+              <div className="limbo-caption">
+                <span className="micro-tag">01 · ESENCIA</span>
+                <h1 className="caption-title">Tu conocimiento merece ser referente.</h1>
+                <p className="caption-subtitle">De invisible a influyente.</p>
+                <div className="caption-actions">
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={() => setIsContactOpen(true)}
                   >
-                    Pagar Experiencia Esencia
-                  </a>
-                </div>
-                <div className="qr-panel">
-                  <img src="/assets/qr/esencia-early-bird.jpeg" alt="Código QR de pago Experiencia Esencia" />
-                  <p>También puedes escanear el código QR para pagar desde tu celular.</p>
-                </div>
-              </article>
-
-              <article className="ticket-card featured-ticket">
-                <div className="ticket-main">
-                  <p className="ticket-label">Experiencia Presencia & Expansión</p>
-                  <h3>Early Bird: $70.000 CLP</h3>
-                  <p className="ticket-cups">10 cupos Early Bird</p>
-                  <ul className="ticket-benefits">
-                    <li>Todo lo de Experiencia Esencia.</li>
-                    <li>Workshop online de preparación visual.</li>
-                    <li>Sesión fotográfica estratégica.</li>
-                    <li>4 fotografías profesionales editadas.</li>
-                    <li>Podcast Marca Visible.</li>
-                    <li>Círculo de integración post evento.</li>
-                  </ul>
-                  <details className="ticket-details">
-                    <summary>Ver todo lo que incluye</summary>
-                    <p>
-                      Una experiencia ampliada para potenciar tu presencia antes, durante y después
-                      del evento, con preparación visual, fotografía profesional y espacios de integración.
-                    </p>
-                  </details>
-                  <a
-                    className="button ticket-button"
-                    href="https://www.flow.cl/btn.php?token=oa0870c0ba1d4c48b8b7a33bf84506637fad7121"
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="Pagar Presencia y Expansión en Flow"
+                    Conectar
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-link"
+                    onClick={() => scrollToPercentage(0.3)}
                   >
-                    Pagar Presencia & Expansión
-                  </a>
+                    Deslizar para explorar ↓
+                  </button>
                 </div>
-                <div className="qr-panel">
-                  <img src="/assets/qr/presencia-expansion-early-bird.jpeg" alt="Código QR de pago Presencia y Expansión" />
-                  <p>También puedes escanear el código QR para pagar desde tu celular.</p>
-                </div>
-              </article>
+              </div>
             </div>
 
-            <div className="general-price-note">
-              <p>
-                <strong>Valor General:</strong> Experiencia Esencia: $45.000 CLP · Experiencia Presencia & Expansión: $80.000 CLP
-              </p>
-              <p>
-                Marca Visible es una experiencia boutique con cupos limitados, diseñada para asegurar
-                cercanía, networking de calidad y una experiencia personalizada.
-              </p>
+            {/* ACTO 02: POSICIONAMIENTO (Acercamiento a la ventana · 26% - 50%) */}
+            <div className="limbo-act left-aligned" style={getLimboStyle(0.26, 0.52)}>
+              <div className="limbo-caption">
+                <span className="micro-tag">02 · POSICIONAMIENTO</span>
+                <h2 className="caption-title">Dejar de competir por precio.</h2>
+                <p className="caption-subtitle">
+                  Cuando tu identidad es sólida y tu mensaje es claro, el mercado correcto deja de compararte y comienza a buscarte.
+                </p>
+                <div className="caption-actions">
+                  <button
+                    type="button"
+                    className="btn-link"
+                    onClick={() => scrollToPercentage(0.6)}
+                  >
+                    Continuar recorrido ↓
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* ACTO 03: ELEVACIÓN & IA (Saliendo por la ventana · 52% - 75%) */}
+            <div className="limbo-act left-aligned" style={getLimboStyle(0.53, 0.76)}>
+              <div className="limbo-caption">
+                <span className="micro-tag">03 · ELEVACIÓN & IA</span>
+                <h2 className="caption-title">Amplifica tu impacto sin perder tu esencia.</h2>
+                <p className="caption-subtitle">
+                  Estrategia visual y tecnología para multiplicar tu presencia digital manteniendo tu autenticidad.
+                </p>
+                <div className="caption-actions">
+                  <button
+                    type="button"
+                    className="btn-link"
+                    onClick={() => scrollToPercentage(0.82)}
+                  >
+                    Ver el horizonte ↓
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* ACTO 04: EL HORIZONTE (Montañas y atardecer completo · 78% - 98%) */}
+            <div className="limbo-act left-aligned" style={getLimboStyle(0.78, 0.98)}>
+              <div className="limbo-caption">
+                <span className="micro-tag">04 · EL SIGUIENTE NIVEL</span>
+                <h2 className="caption-title">Haz visible lo que ya existe en ti.</h2>
+                <p className="caption-subtitle">
+                  El mundo profesional no premia a los mejores en silencio; premia a quienes saben comunicar su verdadero valor.
+                </p>
+                <div className="caption-actions">
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={() => setIsContactOpen(true)}
+                  >
+                    Iniciar Conversación
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-link"
+                    onClick={scrollToFooter}
+                  >
+                    Ver datos de contacto ↓
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </section>
+        </div>
+      </div>
 
-        <section className="urgency-section section-pad" aria-labelledby="urgency-title">
-          <div className="section-inner urgency-card">
-            <p className="eyebrow dark">Cupos limitados</p>
-            <h2 id="urgency-title">Cupos limitados para una experiencia cercana y personalizada</h2>
-            <p>El valor Early Bird estará disponible solo hasta el 10 de julio o hasta agotar cupos.</p>
-            <a className="button button-primary urgency-button" href="#inversion">Reservar mi cupo</a>
+      {/* PIE DE PÁGINA RÍGIDO: A CONTINUACIÓN DEL VIDEO */}
+      <footer className="rigid-footer" id="contacto">
+        <div className="rigid-footer-inner">
+          {/* Texto motivador de marca personal */}
+          <div className="rigid-quote-box">
+            <span className="quote-mark">“</span>
+            <p className="rigid-quote-text">
+              Tu marca personal no es solo lo que dices de ti; es la huella, la coherencia y el estándar de excelencia que dejas en quienes eligen confiar en tu visión. Haz de tu nombre un referente.
+            </p>
           </div>
-        </section>
 
-        <section id="ubicacion" className="location-section section-pad" aria-labelledby="location-title">
-          <div className="section-inner location-card">
-            <div className="location-copy">
-              <p className="eyebrow dark">Ubicación</p>
-              <h2 id="location-title">Anahata Lodge · Puerto Varas</h2>
-              <p>
-                Un entorno natural, cálido y luminoso para inspirar conversación, conexión y nuevas oportunidades.
-              </p>
-              <address>Lomas Panorámicas 28, Puerto Varas, Chile</address>
+          {/* Datos de contacto y SurInnovacion */}
+          <div className="rigid-meta-section">
+            <div className="rigid-brand-info">
+              <span className="rigid-brand-name">SurInnovacion</span>
+              <p className="rigid-brand-desc">Consultoría Estratégica & Inteligencia Artificial</p>
+              <address className="rigid-address">
+                <span className="icon">📍</span> Avenida Cuarta Terraza 5098 · Valle Volcanes, Puerto Montt
+              </address>
+            </div>
+
+            <div className="rigid-contact-actions">
               <a
-                className="button location-button"
-                href="https://www.google.com/maps/search/?api=1&query=Lomas%20Panor%C3%A1micas%2028%2C%20Puerto%20Varas%2C%20Chile"
+                href="https://wa.me/56992891678?text=Hola%20Marco,%20quiero%20conversar%20sobre%20Marca%20Personal"
                 target="_blank"
                 rel="noreferrer"
-                aria-label="Abrir ubicación de Anahata Lodge en Google Maps"
+                className="rigid-phone-btn"
               >
-                Cómo llegar
+                <span className="phone-icon">📞</span>
+                <div>
+                  <span className="phone-label">Fono & WhatsApp directo</span>
+                  <span className="phone-number">+56 9 9289 1678</span>
+                </div>
               </a>
-            </div>
-            <figure className="location-image">
-              <img src="/assets/lodge/Imagen3.png" alt="Vista exterior de Anahata Lodge en Puerto Varas" />
-            </figure>
-          </div>
-        </section>
 
-        <section className="final-cta-section section-pad" aria-labelledby="final-title">
-          <div className="section-inner final-cta-card">
-            <h2 id="final-title">Es momento de hacer visible el valor que ya existe en ti</h2>
-            <p>
-              Reserva tu lugar y comienza a construir una marca que inspire confianza, genere oportunidades y deje huella.
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => setIsContactOpen(true)}
+              >
+                Agendar Conversación
+              </button>
+            </div>
+          </div>
+
+          {/* Barra inferior de créditos */}
+          <div className="rigid-copyright-bar">
+            <p className="credit-text">
+              Creado por <strong>Marco Iglesias</strong> by <strong>SurInnovacion</strong>
             </p>
-            <div className="final-actions">
-              <a className="button button-primary" href="#inversion">Reservar Experiencia Esencia</a>
-              <a className="button button-secondary light" href="#inversion">Reservar Presencia & Expansión</a>
-            </div>
+            <button
+              type="button"
+              className="scroll-top-btn"
+              onClick={() => scrollToPercentage(0)}
+              aria-label="Volver arriba"
+            >
+              ↑ Volver al inicio
+            </button>
           </div>
-        </section>
-      </main>
-
-      <a className="back-to-top" href="#inicio" aria-label="Volver al inicio">
-        ↑
-      </a>
-
-      <footer className="site-footer">
-        <div className="footer-main">
-          <a className="footer-brand" href="#inicio">Marca Visible · De invisible a Referente</a>
-          <p>Sábado 18 de julio · 09:30 a 14:30 hrs</p>
-          <p>Anahata Lodge · Puerto Varas</p>
         </div>
-        <nav className="footer-links" aria-label="Navegación inferior">
-          <a href="#inicio">Inicio</a>
-          <a href="#experiencia">Experiencia</a>
-          <a href="#relatores">Relatores</a>
-          <a href="#inversion">Inversión</a>
-          <a href="#ubicacion">Ubicación</a>
-        </nav>
-        <p className="footer-credit">Creado por Marco Iglesias by SurInnovacion · Todos los derechos reservados</p>
       </footer>
+
+      {/* Modal de Conexión / Contacto */}
+      {isContactOpen && (
+        <div
+          className="modal-backdrop"
+          role="presentation"
+          onClick={() => setIsContactOpen(false)}
+        >
+          <div
+            className="booking-modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="contact-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="modal-close-btn"
+              onClick={() => setIsContactOpen(false)}
+              aria-label="Cerrar formulario"
+            >
+              ✕
+            </button>
+
+            {!contactSubmitted ? (
+              <>
+                <span className="micro-tag">CONEXIÓN DIRECTA</span>
+                <h2 id="contact-title">Potencia tu Marca Personal</h2>
+                <p className="booking-modal-subtitle">
+                  Conversemos sobre tu visión profesional y los próximos pasos para elevar tu posicionamiento.
+                </p>
+
+                <form className="booking-form" onSubmit={handleSubmit}>
+                  <div className="form-group">
+                    <label htmlFor="name">Nombre y Apellido</label>
+                    <input
+                      id="name"
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Tu nombre completo"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="email">Correo Electrónico</label>
+                    <input
+                      id="email"
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="nombre@empresa.com"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="phone">WhatsApp o Teléfono</label>
+                    <input
+                      id="phone"
+                      type="text"
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+56 9 9289 1678"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="note">¿Qué desafío buscas potenciar? (Opcional)</label>
+                    <input
+                      id="note"
+                      type="text"
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      placeholder="Ej. Posicionamiento, conferencias, consultoría..."
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn-primary large full-width"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Enviando a surinnovacion7@gmail.com...' : 'Enviar Mensaje'}
+                  </button>
+                  <p className="form-privacy-note">
+                    🔒 Tu mensaje llegará directamente a <strong>surinnovacion7@gmail.com</strong>
+                  </p>
+                </form>
+              </>
+            ) : (
+              <div className="booking-success">
+                <div className="success-icon">✓</div>
+                <h2>¡Mensaje Enviado con Éxito!</h2>
+                <p>
+                  Tus datos fueron remitidos directamente a <strong>surinnovacion7@gmail.com</strong>. Marco Iglesias se pondrá en contacto contigo a la brevedad.
+                </p>
+                <div className="success-actions">
+                  <a
+                    href={`https://wa.me/56992891678?text=${encodeURIComponent(`Hola Marco, envié mis datos desde la web de Marca Personal (Nombre: ${name}, Email: ${email}).`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn-whatsapp"
+                  >
+                    <span>💬</span> Avisar también por WhatsApp
+                  </a>
+                  <button
+                    type="button"
+                    className="btn-link"
+                    onClick={() => {
+                      setIsContactOpen(false)
+                      setContactSubmitted(false)
+                      setName('')
+                      setEmail('')
+                      setPhone('')
+                      setNote('')
+                    }}
+                  >
+                    Cerrar ventana
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Preload status */}
+      {loadedCount < TOTAL_FRAMES && (
+        <div className="preload-status" aria-live="polite">
+          <div className="preload-spinner" />
+          <span>Cargando secuencia cinemática ({loadedCount}/{TOTAL_FRAMES})...</span>
+        </div>
+      )}
     </div>
   )
 }
