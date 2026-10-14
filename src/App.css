@@ -35,6 +35,7 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 ::selection {
@@ -59,6 +60,7 @@ html, body {
   left: 0;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   z-index: 1;
   pointer-events: none;
   overflow: hidden;
@@ -187,7 +189,7 @@ html, body {
 .scroll-track {
   position: relative;
   width: 100%;
-  height: 480vh;
+  height: calc(100svh + 3600px);
   z-index: 10;
 }
 
@@ -196,6 +198,7 @@ html, body {
   top: 0;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   pointer-events: none;
 }
@@ -685,6 +688,7 @@ html, body {
   color: var(--text-muted);
   backdrop-filter: blur(12px);
   pointer-events: none;
+  z-index: 3;
 }
 
 .preload-spinner {
@@ -705,6 +709,10 @@ html, body {
    ========================================================================= */
 
 @media (max-width: 800px) {
+  .scroll-track {
+    height: calc(100svh + 3200px);
+  }
+
   .site-header {
     width: calc(100% - 24px);
     padding: 8px 14px;

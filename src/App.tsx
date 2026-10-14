@@ -1,17 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
-
-const TOTAL_FRAMES = 241
+import { ScrollyCanvas } from './ScrollyCanvas'
 
 function App() {
   const trackRef = useRef<HTMLDivElement | null>(null)
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const imagesRef = useRef<HTMLImageElement[]>([])
-  const currentFrameRef = useRef<number>(1)
-  const targetFrameRef = useRef<number>(1)
-  const animFrameIdRef = useRef<number | null>(null)
+  const scrollProgressRef = useRef(0)
 
-  const [loadedCount, setLoadedCount] = useState<number>(0)
   const [scrollProgress, setScrollProgress] = useState<number>(0)
   const [isContactOpen, setIsContactOpen] = useState(false)
   const [contactSubmitted, setContactSubmitted] = useState(false)
@@ -49,145 +43,74 @@ function App() {
     }
   }
 
-  // Preload all 241 frames into memory
+  // Sync scroll with a fixed-length runway and preserve progress on rotation.
   useEffect(() => {
-    let active = true
-    const imageList: HTMLImageElement[] = []
-    let loaded = 0
+    let scrollRaf: number | null = null
+    let resizeTimer: number | null = null
+    let preservingProgress = false
+    let wasLandscape = window.innerWidth > window.innerHeight
 
-    // Load first frame immediately
-    const firstImg = new Image()
-    firstImg.src = '/frames/frame_001.jpg'
-    firstImg.onload = () => {
-      if (!active) return
-      loaded++
-      setLoadedCount(loaded)
-      drawFrame(1)
-    }
-    imageList[1] = firstImg
-
-    // Load remaining frames
-    for (let i = 2; i <= TOTAL_FRAMES; i++) {
-      const img = new Image()
-      const pad = String(i).padStart(3, '0')
-      img.src = `/frames/frame_${pad}.jpg`
-      img.onload = () => {
-        if (!active) return
-        loaded++
-        setLoadedCount(loaded)
-      }
-      imageList[i] = img
-    }
-
-    imagesRef.current = imageList
-
-    return () => {
-      active = false
-    }
-  }, [])
-
-  // Draw frame on canvas with responsive cover
-  const drawFrame = (frameIndex: number) => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    const clampedIndex = Math.max(1, Math.min(TOTAL_FRAMES, Math.round(frameIndex)))
-    let img = imagesRef.current[clampedIndex]
-
-    if (!img || !img.complete || img.naturalWidth === 0) {
-      for (let offset = 1; offset < TOTAL_FRAMES; offset++) {
-        const prev = imagesRef.current[clampedIndex - offset]
-        if (prev && prev.complete && prev.naturalWidth > 0) {
-          img = prev
-          break
-        }
-        const next = imagesRef.current[clampedIndex + offset]
-        if (next && next.complete && next.naturalWidth > 0) {
-          img = next
-          break
-        }
-      }
-    }
-    if (!img || !img.complete || img.naturalWidth === 0) {
-      img = imagesRef.current[1]
-    }
-    if (!img || !img.complete || img.naturalWidth === 0) return
-
-    const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    const displayWidth = window.innerWidth
-    const displayHeight = window.innerHeight
-
-    if (canvas.width !== displayWidth * dpr || canvas.height !== displayHeight * dpr) {
-      canvas.width = displayWidth * dpr
-      canvas.height = displayHeight * dpr
-    }
-
-    ctx.save()
-    ctx.scale(dpr, dpr)
-
-    const iw = img.naturalWidth
-    const ih = img.naturalHeight
-    const scale = Math.max(displayWidth / iw, displayHeight / ih)
-    const nw = iw * scale
-    const nh = ih * scale
-    const nx = (displayWidth - nw) / 2
-    const ny = (displayHeight - nh) / 2
-
-    ctx.clearRect(0, 0, displayWidth, displayHeight)
-    ctx.drawImage(img, nx, ny, nw, nh)
-    ctx.restore()
-  }
-
-  // 60fps lerp loop for smooth forward and reverse video playback
-  useEffect(() => {
-    const loop = () => {
-      const diff = targetFrameRef.current - currentFrameRef.current
-      if (Math.abs(diff) > 0.01) {
-        currentFrameRef.current += diff * 0.16
-        drawFrame(currentFrameRef.current)
-      }
-      animFrameIdRef.current = requestAnimationFrame(loop)
-    }
-
-    animFrameIdRef.current = requestAnimationFrame(loop)
-
-    return () => {
-      if (animFrameIdRef.current) {
-        cancelAnimationFrame(animFrameIdRef.current)
-      }
-    }
-  }, [])
-
-  // Sync window scroll with the entire 241-frame video track
-  useEffect(() => {
-    const handleScroll = () => {
+    const measureProgress = () => {
+      scrollRaf = null
+      if (preservingProgress) return
       const track = trackRef.current
       if (!track) return
 
       const trackScrollable = track.offsetHeight - window.innerHeight
       if (trackScrollable <= 0) return
 
-      const scrollY = window.scrollY
-      const progress = Math.max(0, Math.min(1, scrollY / trackScrollable))
+      const progress = Math.max(
+        0,
+        Math.min(1, (window.scrollY - track.offsetTop) / trackScrollable),
+      )
 
-      targetFrameRef.current = 1 + progress * (TOTAL_FRAMES - 1)
-      setScrollProgress(progress)
+      scrollProgressRef.current = progress
+      setScrollProgress((previous) => Math.abs(previous - progress) < 0.0005 ? previous : progress)
+    }
+
+    const handleScroll = () => {
+      if (scrollRaf === null) scrollRaf = requestAnimationFrame(measureProgress)
     }
 
     const handleResize = () => {
-      drawFrame(currentFrameRef.current)
+      const isLandscape = window.innerWidth > window.innerHeight
+      if (isLandscape === wasLandscape) {
+        handleScroll()
+        return
+      }
+
+      wasLandscape = isLandscape
+      preservingProgress = true
+      const savedProgress = scrollProgressRef.current
+      if (resizeTimer !== null) window.clearTimeout(resizeTimer)
+
+      resizeTimer = window.setTimeout(() => {
+        const track = trackRef.current
+        if (track) {
+          const trackScrollable = Math.max(1, track.offsetHeight - window.innerHeight)
+          window.scrollTo({
+            top: track.offsetTop + savedProgress * trackScrollable,
+            behavior: 'auto',
+          })
+        }
+
+        scrollProgressRef.current = savedProgress
+        setScrollProgress(savedProgress)
+        preservingProgress = false
+        handleScroll()
+      }, 180)
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
     window.addEventListener('resize', handleResize)
 
-    handleScroll()
+    measureProgress()
 
     return () => {
       window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('resize', handleResize)
+      if (scrollRaf !== null) cancelAnimationFrame(scrollRaf)
+      if (resizeTimer !== null) window.clearTimeout(resizeTimer)
     }
   }, [])
 
@@ -196,7 +119,7 @@ function App() {
     if (!track) return
     const trackScrollable = track.offsetHeight - window.innerHeight
     window.scrollTo({
-      top: trackScrollable * percent,
+      top: track.offsetTop + trackScrollable * percent,
       behavior: 'smooth',
     })
   }
@@ -265,7 +188,7 @@ function App() {
     <div className="scrolly-root">
       {/* Background Canvas: Fixed full viewport */}
       <div className="canvas-wrapper" aria-hidden="true">
-        <canvas ref={canvasRef} className="scrolly-canvas" />
+        <ScrollyCanvas progress={scrollProgress} />
         <div className="cinematic-vignette" />
       </div>
 
@@ -596,14 +519,6 @@ function App() {
               </div>
             )}
           </div>
-        </div>
-      )}
-
-      {/* Preload status */}
-      {loadedCount < TOTAL_FRAMES && (
-        <div className="preload-status" aria-live="polite">
-          <div className="preload-spinner" />
-          <span>Cargando secuencia cinemática ({loadedCount}/{TOTAL_FRAMES})...</span>
         </div>
       )}
     </div>
