@@ -66,10 +66,36 @@ html, body {
   overflow: hidden;
 }
 
+.hero-initial-picture {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hero-initial-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
 .scrolly-canvas {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   display: block;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.35s ease-out;
+}
+
+.scrolly-canvas.is-ready {
+  opacity: 1;
 }
 
 /* Subtle gradient vignette to guarantee text legibility */
@@ -671,41 +697,8 @@ html, body {
   transform: translateY(-2px);
 }
 
-/* Preload status */
-.preload-status {
-  position: fixed;
-  bottom: 16px;
-  left: 16px;
-  z-index: 70;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(9, 12, 16, 0.85);
-  border: 1px solid var(--border-subtle);
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  backdrop-filter: blur(12px);
-  pointer-events: none;
-  z-index: 3;
-}
-
-.preload-spinner {
-  width: 10px;
-  height: 10px;
-  border: 2px solid rgba(216, 194, 122, 0.25);
-  border-top-color: var(--gold);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
 /* =========================================================================
-   RESPONSIVENESS
+   RESPONSIVENESS & ACCESSIBILITY
    ========================================================================= */
 
 @media (max-width: 800px) {
@@ -730,6 +723,10 @@ html, body {
   .limbo-caption {
     padding: 22px 20px;
     border-radius: 18px;
+    background: rgba(8, 10, 14, 0.68);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
   }
 
   .rigid-meta-section {
@@ -771,5 +768,71 @@ html, body {
 
   .rigid-footer {
     padding: 60px 16px 36px;
+  }
+}
+
+/* Mobile landscape adjustments to keep captions visible without overflow */
+@media (max-height: 540px) and (orientation: landscape) {
+  .site-header {
+    top: 6px;
+    min-height: 42px;
+    padding: 4px 14px;
+  }
+
+  .brand-text {
+    font-size: 1.08rem;
+  }
+
+  .limbo-act {
+    padding: 50px 24px 14px;
+    justify-content: center;
+  }
+
+  .limbo-caption {
+    padding: 14px 18px;
+    max-width: 520px;
+    max-height: 80vh;
+    overflow-y: auto;
+    background: rgba(8, 10, 14, 0.76);
+  }
+
+  .caption-title {
+    font-size: 1.55rem;
+    margin-bottom: 4px;
+  }
+
+  .caption-subtitle {
+    font-size: 0.84rem;
+    line-height: 1.35;
+  }
+
+  .caption-actions {
+    margin-top: 8px;
+    gap: 12px;
+  }
+
+  .btn-primary {
+    padding: 8px 18px;
+    font-size: 0.82rem;
+  }
+}
+
+/* Prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .scrolly-canvas {
+    display: none !important;
+  }
+
+  .hero-initial-picture {
+    opacity: 1 !important;
   }
 }

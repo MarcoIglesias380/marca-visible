@@ -7,6 +7,10 @@ function App() {
   const scrollProgressRef = useRef(0)
 
   const [scrollProgress, setScrollProgress] = useState<number>(0)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  })
   const [isContactOpen, setIsContactOpen] = useState(false)
   const [contactSubmitted, setContactSubmitted] = useState(false)
   const [name, setName] = useState('')
@@ -42,6 +46,14 @@ function App() {
       setIsSubmitting(false)
     }
   }
+
+  // Listen for prefers-reduced-motion changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const updateMotion = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches)
+    mediaQuery.addEventListener('change', updateMotion)
+    return () => mediaQuery.removeEventListener('change', updateMotion)
+  }, [])
 
   // Sync scroll with a fixed-length runway and preserve progress on rotation.
   useEffect(() => {
@@ -81,24 +93,48 @@ function App() {
 
       wasLandscape = isLandscape
       preservingProgress = true
+
+      const track = trackRef.current
+      const currentScrollY = window.scrollY
+      const trackTop = track ? track.offsetTop : 0
+      const trackScrollable = track ? Math.max(1, track.offsetHeight - window.innerHeight) : 1
+      const isPastHero = currentScrollY >= (trackTop + trackScrollable - 20)
+
       const savedProgress = scrollProgressRef.current
+      const footer = document.getElementById('contacto')
+      const offsetInFooter = footer ? currentScrollY - footer.offsetTop : 0
+
       if (resizeTimer !== null) window.clearTimeout(resizeTimer)
 
       resizeTimer = window.setTimeout(() => {
-        const track = trackRef.current
-        if (track) {
-          const trackScrollable = Math.max(1, track.offsetHeight - window.innerHeight)
-          window.scrollTo({
-            top: track.offsetTop + savedProgress * trackScrollable,
-            behavior: 'auto',
-          })
+        const currentTrack = trackRef.current
+        if (currentTrack) {
+          if (isPastHero) {
+            // Keep visitor in the footer / section below hero; do not pull them back into animation
+            const currentFooter = document.getElementById('contacto')
+            if (currentFooter) {
+              const targetTop = Math.max(
+                currentTrack.offsetTop + currentTrack.offsetHeight,
+                currentFooter.offsetTop + offsetInFooter,
+              )
+              window.scrollTo({ top: targetTop, behavior: 'auto' })
+            }
+          } else {
+            const newTrackScrollable = Math.max(1, currentTrack.offsetHeight - window.innerHeight)
+            window.scrollTo({
+              top: currentTrack.offsetTop + savedProgress * newTrackScrollable,
+              behavior: 'auto',
+            })
+          }
         }
 
-        scrollProgressRef.current = savedProgress
-        setScrollProgress(savedProgress)
+        if (!isPastHero) {
+          scrollProgressRef.current = savedProgress
+          setScrollProgress(savedProgress)
+        }
         preservingProgress = false
         handleScroll()
-      }, 180)
+      }, 150)
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
@@ -138,6 +174,19 @@ function App() {
 
   // Limbo style: Hero is visible immediately at 100%, and each act transitions cleanly
   const getLimboStyle = (start: number, end: number, isFirst = false) => {
+    if (prefersReducedMotion) {
+      const isActive = isFirst
+        ? scrollProgress <= end
+        : scrollProgress >= start && scrollProgress <= end
+      const opacity = isActive ? 1 : 0
+      return {
+        opacity,
+        transform: 'none',
+        pointerEvents: (opacity > 0.3 ? 'auto' : 'none') as 'auto' | 'none',
+        visibility: (opacity > 0.01 ? 'visible' : 'hidden') as 'visible' | 'hidden',
+      }
+    }
+
     let opacity = 0
     let translateY = 18
 
@@ -186,9 +235,26 @@ function App() {
 
   return (
     <div className="scrolly-root">
-      {/* Background Canvas: Fixed full viewport */}
+      {/* Background Canvas & Initial Hero Picture: Fixed full viewport */}
       <div className="canvas-wrapper" aria-hidden="true">
-        <ScrollyCanvas progress={scrollProgress} />
+        <picture className="hero-initial-picture">
+          <source
+            media="(max-width: 820px)"
+            srcSet="/frames-v2/mobile/frame_001.webp"
+            type="image/webp"
+          />
+          <img
+            src="/frames-v2/desktop/frame_001.webp"
+            alt=""
+            className="hero-initial-img"
+            fetchPriority="high"
+            decoding="async"
+          />
+        </picture>
+        <ScrollyCanvas
+          progress={scrollProgress}
+          prefersReducedMotion={prefersReducedMotion}
+        />
         <div className="cinematic-vignette" />
       </div>
 
