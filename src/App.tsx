@@ -240,11 +240,11 @@ function App() {
         <picture className="hero-initial-picture">
           <source
             media="(max-width: 820px)"
-            srcSet="/frames-v3/mobile/frame_001.webp"
+            srcSet="/frames-v4/mobile/frame_001.webp"
             type="image/webp"
           />
           <img
-            src="/frames-v3/desktop/frame_001.webp"
+            src="/frames-v4/desktop/frame_001.webp"
             alt=""
             className="hero-initial-img"
             fetchPriority="high"
@@ -297,7 +297,10 @@ function App() {
       </header>
 
       {/* Discreet Scroll Progress Line */}
-      <div className="scroll-indicator-bar" style={{ width: `${scrollProgress * 100}%` }} />
+      <div
+        className="scroll-indicator-bar"
+        style={{ transform: `scaleX(${scrollProgress})` }}
+      />
 
       {/* TRACK DE SCROLL: EL VIDEO COMPLETO TRANSCURRE AQUÍ (500vh) */}
       <div className="scroll-track" ref={trackRef}>
