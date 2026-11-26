@@ -1,7 +1,7 @@
 {
   "headers": [
     {
-      "source": "/frames-v2/(.*)",
+      "source": "/frames-v3/(.*)",
       "headers": [
         {
           "key": "Cache-Control",

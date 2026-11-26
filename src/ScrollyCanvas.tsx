@@ -32,7 +32,7 @@ const PROFILES: Record<SequenceProfile['name'], SequenceProfile> = {
 }
 
 const frameUrl = (profile: SequenceProfile, index: number) =>
-  `/frames-v2/${profile.name}/frame_${String(index).padStart(3, '0')}.webp`
+  `/frames-v3/${profile.name}/frame_${String(index).padStart(3, '0')}.webp`
 
 class ProgressiveFrameLoader {
   private readonly profile: SequenceProfile

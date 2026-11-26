@@ -240,11 +240,11 @@ function App() {
         <picture className="hero-initial-picture">
           <source
             media="(max-width: 820px)"
-            srcSet="/frames-v2/mobile/frame_001.webp"
+            srcSet="/frames-v3/mobile/frame_001.webp"
             type="image/webp"
           />
           <img
-            src="/frames-v2/desktop/frame_001.webp"
+            src="/frames-v3/desktop/frame_001.webp"
             alt=""
             className="hero-initial-img"
             fetchPriority="high"
