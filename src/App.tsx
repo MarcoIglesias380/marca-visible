@@ -101,26 +101,21 @@ function App() {
       const isPastHero = currentScrollY >= (trackTop + trackScrollable - 20)
 
       const savedProgress = scrollProgressRef.current
-      const footer = document.getElementById('contacto')
-      const offsetInFooter = footer ? currentScrollY - footer.offsetTop : 0
+      const pastTrackDelta = Math.max(0, currentScrollY - (trackTop + trackScrollable))
 
       if (resizeTimer !== null) window.clearTimeout(resizeTimer)
 
       resizeTimer = window.setTimeout(() => {
         const currentTrack = trackRef.current
         if (currentTrack) {
+          const newTrackScrollable = Math.max(1, currentTrack.offsetHeight - window.innerHeight)
           if (isPastHero) {
-            // Keep visitor in the footer / section below hero; do not pull them back into animation
-            const currentFooter = document.getElementById('contacto')
-            if (currentFooter) {
-              const targetTop = Math.max(
-                currentTrack.offsetTop + currentTrack.offsetHeight,
-                currentFooter.offsetTop + offsetInFooter,
-              )
-              window.scrollTo({ top: targetTop, behavior: 'auto' })
-            }
+            // Preserve post-hero scroll offset across #concepto, #consejos, or #contacto
+            window.scrollTo({
+              top: currentTrack.offsetTop + newTrackScrollable + pastTrackDelta,
+              behavior: 'auto',
+            })
           } else {
-            const newTrackScrollable = Math.max(1, currentTrack.offsetHeight - window.innerHeight)
             window.scrollTo({
               top: currentTrack.offsetTop + savedProgress * newTrackScrollable,
               behavior: 'auto',
@@ -160,11 +155,11 @@ function App() {
     })
   }
 
-  const scrollToFooter = () => {
-    const footer = document.getElementById('contacto')
-    if (footer) {
-      footer.scrollIntoView({ behavior: 'smooth' })
-    } else {
+  const scrollToSection = (id: string) => {
+    const target = document.getElementById(id)
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth' })
+    } else if (id === 'contacto') {
       window.scrollTo({
         top: document.documentElement.scrollHeight,
         behavior: 'smooth',
@@ -251,13 +246,13 @@ function App() {
           <button type="button" onClick={() => scrollToPercentage(0)}>
             Inicio
           </button>
-          <button type="button" onClick={() => scrollToPercentage(0.3)}>
-            Posicionamiento
+          <button type="button" onClick={() => scrollToSection('concepto')}>
+            Qué es
           </button>
-          <button type="button" onClick={() => scrollToPercentage(0.6)}>
-            Impacto
+          <button type="button" onClick={() => scrollToSection('consejos')}>
+            Consejos
           </button>
-          <button type="button" onClick={scrollToFooter}>
+          <button type="button" onClick={() => scrollToSection('contacto')}>
             Contacto
           </button>
         </nav>
@@ -306,12 +301,14 @@ function App() {
           </div>
 
           <div className="limbo-container">
-            {/* ACTO 01: EL ENFOQUE (Cabina del avión · 0% - 24%) */}
+            {/* ACTO 01: MARCA PERSONAL (Cabina del avión · 0% - 25%) */}
             <div className="limbo-act left-aligned" style={getLimboStyle(0, 0.25, true)}>
               <div className="limbo-caption">
-                <span className="micro-tag">01 · ESENCIA</span>
-                <h1 className="caption-title">Tu conocimiento merece ser referente.</h1>
-                <p className="caption-subtitle">De invisible a influyente.</p>
+                <span className="micro-tag">01 · MARCA PERSONAL</span>
+                <h1 className="caption-title">Las personas eligen a personas.</h1>
+                <p className="caption-subtitle">
+                  Construye una marca personal sólida, visible y rentable sin perder tu esencia.
+                </p>
                 <div className="caption-actions">
                   <button
                     type="button"
@@ -325,19 +322,19 @@ function App() {
                     className="btn-link"
                     onClick={() => scrollToPercentage(0.3)}
                   >
-                    Deslizar para explorar ↓
+                    Explorar la guía ↓
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* ACTO 02: POSICIONAMIENTO (Acercamiento a la ventana · 26% - 50%) */}
+            {/* ACTO 02: VISIBILIDAD (Acercamiento a la ventana · 26% - 52%) */}
             <div className="limbo-act left-aligned" style={getLimboStyle(0.26, 0.52)}>
               <div className="limbo-caption">
-                <span className="micro-tag">02 · POSICIONAMIENTO</span>
-                <h2 className="caption-title">Dejar de competir por precio.</h2>
+                <span className="micro-tag">02 · VISIBILIDAD</span>
+                <h2 className="caption-title">Tu problema no es tu talento. Es que no te ven.</h2>
                 <p className="caption-subtitle">
-                  Cuando tu identidad es sólida y tu mensaje es claro, el mercado correcto deja de compararte y comienza a buscarte.
+                  Nadie confía en un logo sin rostro. Mostrarte con claridad convierte desconocidos en clientes.
                 </p>
                 <div className="caption-actions">
                   <button
@@ -345,19 +342,19 @@ function App() {
                     className="btn-link"
                     onClick={() => scrollToPercentage(0.6)}
                   >
-                    Continuar recorrido ↓
+                    Siguiente clave ↓
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* ACTO 03: ELEVACIÓN & IA (Saliendo por la ventana · 52% - 75%) */}
+            {/* ACTO 03: AUTORIDAD (Saliendo por la ventana · 53% - 76%) */}
             <div className="limbo-act left-aligned" style={getLimboStyle(0.53, 0.76)}>
               <div className="limbo-caption">
-                <span className="micro-tag">03 · ELEVACIÓN & IA</span>
-                <h2 className="caption-title">Amplifica tu impacto sin perder tu esencia.</h2>
+                <span className="micro-tag">03 · AUTORIDAD</span>
+                <h2 className="caption-title">Tu nombre es lo único que nadie puede copiar.</h2>
                 <p className="caption-subtitle">
-                  Estrategia visual y tecnología para multiplicar tu presencia digital manteniendo tu autenticidad.
+                  Cuando aportas valor real y compartes tu criterio, el mercado deja de comparar precios y te busca a ti.
                 </p>
                 <div className="caption-actions">
                   <button
@@ -371,13 +368,13 @@ function App() {
               </div>
             </div>
 
-            {/* ACTO 04: EL HORIZONTE (Montañas y atardecer completo · 78% - 98%) */}
+            {/* ACTO 04: OPORTUNIDAD (Horizonte completo · 78% - 98%) */}
             <div className="limbo-act left-aligned" style={getLimboStyle(0.78, 0.98)}>
               <div className="limbo-caption">
-                <span className="micro-tag">04 · EL SIGUIENTE NIVEL</span>
-                <h2 className="caption-title">Haz visible lo que ya existe en ti.</h2>
+                <span className="micro-tag">04 · OPORTUNIDAD</span>
+                <h2 className="caption-title">No necesitas millones de seguidores.</h2>
                 <p className="caption-subtitle">
-                  El mundo profesional no premia a los mejores en silencio; premia a quienes saben comunicar su verdadero valor.
+                  Con método, coherencia y una audiencia comprometida, tu marca abre puertas, clientes y libertad.
                 </p>
                 <div className="caption-actions">
                   <button
@@ -390,9 +387,9 @@ function App() {
                   <button
                     type="button"
                     className="btn-link"
-                    onClick={scrollToFooter}
+                    onClick={() => scrollToSection('concepto')}
                   >
-                    Ver datos de contacto ↓
+                    Desarrollar el concepto ↓
                   </button>
                 </div>
               </div>
@@ -400,6 +397,143 @@ function App() {
           </div>
         </div>
       </div>
+
+      {/* SECCIÓN 1: DESARROLLO DEL CONCEPTO DE MARCA PERSONAL */}
+      <section className="concept-section" id="concepto" aria-labelledby="concept-heading">
+        <div className="concept-inner">
+          <div className="concept-grid">
+            <div className="concept-media">
+              <picture>
+                <source
+                  media="(max-width: 820px)"
+                  srcSet="/images/concept-executive-v1-mobile.webp"
+                  type="image/webp"
+                />
+                <img
+                  src="/images/concept-executive-v1-desktop.webp"
+                  alt="Ejecutivo frente a ventanal panorámico al atardecer proyectando visión de marca personal"
+                  className="concept-img"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </picture>
+              <div className="concept-media-sheen" aria-hidden="true" />
+            </div>
+
+            <div className="concept-content">
+              <span className="micro-tag">EL CONCEPTO</span>
+              <h2 id="concept-heading" className="section-title">
+                No es fama. Es confianza diseñada con intención.
+              </h2>
+              <p className="section-lead">
+                Tu marca personal es la huella que dejas antes de entrar a una reunión: lo que tu mercado entiende que resuelves, el estándar que percibe y la razón por la que decide confiar en ti.
+              </p>
+
+              <div className="concept-shifts">
+                <div className="concept-shift-item">
+                  <h3>De invisible a referente</h3>
+                  <p>
+                    Deja de depender solo del boca a boca y ocupa el lugar de referencia en tu sector.
+                  </p>
+                </div>
+                <div className="concept-shift-item">
+                  <h3>De perseguir a atraer</h3>
+                  <p>
+                    Cuando educas con claridad, los clientes llegan convencidos y listos para conversar.
+                  </p>
+                </div>
+                <div className="concept-shift-item">
+                  <h3>De improvisar a método</h3>
+                  <p>
+                    Identidad visual coherente, mensaje nítido y presencia constante sin perder autenticidad.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECCIÓN 2: CONSEJOS PRÁCTICOS PARA CREAR TU MARCA PERSONAL */}
+      <section className="tips-section" id="consejos" aria-labelledby="tips-heading">
+        <div className="tips-inner">
+          <header className="section-header">
+            <span className="micro-tag">GUÍA PRÁCTICA · 4 CLAVES</span>
+            <h2 id="tips-heading" className="section-title">
+              Cómo crear tu marca personal paso a paso
+            </h2>
+            <p className="section-lead">
+              Lo más importante para empezar con dirección, destacar sin artificios y transformar tu presencia digital en oportunidades reales.
+            </p>
+          </header>
+
+          <div className="tips-grid">
+            <article className="tip-card">
+              <span className="micro-tag">01 · IDENTIDAD</span>
+              <h3 className="tip-title">Diseña antes de grabar</h3>
+              <p className="tip-body">
+                Define qué transmites, tus colores, tu tono y una biografía clara: quién eres, a quién ayudas y cómo. La calidad de imagen, luz y audio refleja la calidad de tu trabajo.
+              </p>
+            </article>
+
+            <article className="tip-card">
+              <span className="micro-tag">02 · AUDIENCIA</span>
+              <h3 className="tip-title">Habla de dolores y deseos reales</h3>
+              <p className="tip-body">
+                Las personas solo se detienen ante lo útil, entretenido o inspirador. Apóyate en escucha activa e Inteligencia Artificial para mapear sus problemas concretos.
+              </p>
+            </article>
+
+            <article className="tip-card">
+              <span className="micro-tag">03 · CONTENIDO</span>
+              <h3 className="tip-title">Combina valor práctico y visión</h3>
+              <p className="tip-body">
+                Atrapa la atención en los primeros 3 segundos. Lo práctico demuestra tu autoridad experta; lo reflexivo conecta con tus valores y te diferencia de cualquiera.
+              </p>
+            </article>
+
+            <article className="tip-card">
+              <span className="micro-tag">04 · CONVERSIÓN</span>
+              <h3 className="tip-title">Transforma confianza en diálogo</h3>
+              <p className="tip-body">
+                No persigas ni vendas de forma agresiva. Entrega un recurso útil, abre conversaciones reales escuchando más de lo que hablas y deja que la compra fluya.
+              </p>
+            </article>
+          </div>
+
+          <div className="tips-habits-bar" aria-label="Hábitos clave para sostener tu marca">
+            <div className="tips-habit-item">
+              <strong>Graba en bloques</strong>
+              <span>Produce varias piezas en una sesión para sostener el ritmo.</span>
+            </div>
+            <div className="tips-habit-item">
+              <strong>Constancia &gt; perfección</strong>
+              <span>El método sostenido supera al miedo a exponerse.</span>
+            </div>
+            <div className="tips-habit-item">
+              <strong>Audiencia correcta</strong>
+              <span>Una comunidad pequeña y fiel genera más impacto que miles pasivos.</span>
+            </div>
+          </div>
+
+          <div className="tips-cta-row">
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => setIsContactOpen(true)}
+            >
+              Potenciar mi Marca Personal
+            </button>
+            <button
+              type="button"
+              className="btn-link"
+              onClick={() => scrollToSection('contacto')}
+            >
+              Ir a contacto ↓
+            </button>
+          </div>
+        </div>
+      </section>
 
       {/* PIE DE PÁGINA RÍGIDO: A CONTINUACIÓN DEL VIDEO */}
       <footer className="rigid-footer" id="contacto">

@@ -345,7 +345,235 @@ html, body {
 }
 
 /* =========================================================================
-   RIGID FOOTER: A CONTINUACIÓN DEL VIDEO
+   CONCEPTO DE MARCA PERSONAL & CONSEJOS PRÁCTICOS
+   ========================================================================= */
+
+#concepto,
+#consejos,
+#contacto {
+  scroll-margin-top: 84px;
+}
+
+.section-title {
+  font-family: var(--serif);
+  font-size: clamp(1.85rem, 1.2rem + 2vw, 2.85rem);
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--white);
+  margin-bottom: 14px;
+}
+
+.section-lead {
+  font-size: clamp(0.96rem, 0.9rem + 0.3vw, 1.08rem);
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+.concept-section {
+  position: relative;
+  z-index: 25;
+  width: 100%;
+  overflow: clip;
+  padding: 108px 24px 96px;
+  background:
+    radial-gradient(ellipse 68% 55% at 18% 24%, rgba(216, 162, 92, 0.12) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 50% at 85% 80%, rgba(44, 72, 96, 0.16) 0%, transparent 70%),
+    linear-gradient(180deg, #070a0f 0%, #0a0e15 55%, #070a0f 100%);
+  border-top: 1px solid rgba(216, 194, 122, 0.2);
+}
+
+.concept-inner,
+.tips-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.concept-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: clamp(28px, 4vw, 56px);
+  align-items: center;
+}
+
+.concept-media {
+  position: relative;
+  border-radius: 24px;
+  overflow: clip;
+  border: 1px solid rgba(216, 194, 122, 0.24);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.65);
+  background: #080b10;
+}
+
+.concept-img {
+  aspect-ratio: 16 / 10;
+  inline-size: 100%;
+  block-size: auto;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.concept-media-sheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(7, 10, 15, 0.08) 0%,
+    transparent 45%,
+    rgba(7, 10, 15, 0.45) 100%
+  );
+}
+
+.concept-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.concept-shifts {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.concept-shift-item {
+  padding: 16px 20px;
+  border-radius: 16px;
+  background: rgba(11, 15, 22, 0.64);
+  backdrop-filter: blur(18px) saturate(145%);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  border: 1px solid rgba(216, 194, 122, 0.18);
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.concept-shift-item:hover {
+  border-color: rgba(216, 194, 122, 0.36);
+  transform: translateY(-1px);
+}
+
+.concept-shift-item h3 {
+  font-family: var(--serif);
+  font-size: 1.28rem;
+  font-weight: 600;
+  color: var(--gold-light);
+  margin-bottom: 4px;
+}
+
+.concept-shift-item p {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.tips-section {
+  position: relative;
+  z-index: 26;
+  width: 100%;
+  overflow: clip;
+  padding: 96px 24px 104px;
+  background:
+    radial-gradient(ellipse 70% 50% at 80% 18%, rgba(216, 194, 122, 0.1) 0%, transparent 65%),
+    radial-gradient(ellipse 65% 55% at 15% 85%, rgba(36, 58, 78, 0.15) 0%, transparent 70%),
+    linear-gradient(180deg, #070a0f 0%, #090d14 55%, #070a0f 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.section-header {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto 48px;
+}
+
+.tips-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: auto auto 1fr;
+  gap: 22px;
+}
+
+.tip-card {
+  grid-row: span 3;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  grid-template-rows: subgrid;
+  gap: 10px;
+  padding: 28px 30px;
+  border-radius: 22px;
+  background: rgba(11, 15, 22, 0.64);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid rgba(216, 194, 122, 0.2);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.48);
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.tip-card:hover {
+  border-color: rgba(216, 194, 122, 0.42);
+  transform: translateY(-2px);
+}
+
+.tip-card .micro-tag {
+  margin-bottom: 0;
+}
+
+.tip-title {
+  font-family: var(--serif);
+  font-size: clamp(1.38rem, 1.1rem + 0.8vw, 1.72rem);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--white);
+}
+
+.tip-body {
+  font-size: 0.94rem;
+  line-height: 1.62;
+  color: var(--text-secondary);
+}
+
+.tips-habits-bar {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  padding: 22px 26px;
+  border-radius: 18px;
+  background: rgba(10, 14, 20, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.tips-habit-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tips-habit-item strong {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--gold-light);
+}
+
+.tips-habit-item span {
+  font-size: 0.84rem;
+  line-height: 1.48;
+  color: var(--text-muted);
+}
+
+.tips-cta-row {
+  margin-top: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* =========================================================================
+   RIGID FOOTER: A CONTINUACIÓN DEL VIDEO Y LA GUÍA
    ========================================================================= */
 
 .rigid-footer {
@@ -357,7 +585,7 @@ html, body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  overflow: hidden;
+  overflow: clip;
   background: #080b10;
   border-top: 1px solid rgba(216, 194, 122, 0.28);
   padding: 112px 24px 48px;
@@ -788,6 +1016,27 @@ html, body {
   .rigid-contact-actions .btn-primary {
     width: 100%;
     justify-content: center;
+  }
+
+  .concept-section,
+  .tips-section {
+    padding: 76px 20px;
+  }
+
+  .concept-grid,
+  .tips-grid,
+  .tips-habits-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .tips-grid {
+    grid-template-rows: none;
+  }
+
+  .tip-card {
+    grid-row: auto;
+    grid-template-rows: auto auto 1fr;
+    padding: 24px 22px;
   }
 }
 
