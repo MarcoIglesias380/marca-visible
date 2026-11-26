@@ -235,29 +235,6 @@ function App() {
 
   return (
     <div className="scrolly-root">
-      {/* Background Canvas & Initial Hero Picture: Fixed full viewport */}
-      <div className="canvas-wrapper" aria-hidden="true">
-        <picture className="hero-initial-picture">
-          <source
-            media="(max-width: 820px)"
-            srcSet="/frames-v4/mobile/frame_001.webp"
-            type="image/webp"
-          />
-          <img
-            src="/frames-v4/desktop/frame_001.webp"
-            alt=""
-            className="hero-initial-img"
-            fetchPriority="high"
-            decoding="async"
-          />
-        </picture>
-        <ScrollyCanvas
-          progress={scrollProgress}
-          prefersReducedMotion={prefersReducedMotion}
-        />
-        <div className="cinematic-vignette" />
-      </div>
-
       {/* Floating Glass Header */}
       <header className="site-header" aria-label="Navegación principal">
         <button
@@ -305,6 +282,29 @@ function App() {
       {/* TRACK DE SCROLL: EL VIDEO COMPLETO TRANSCURRE AQUÍ (500vh) */}
       <div className="scroll-track" ref={trackRef}>
         <div className="stage-sticky-container">
+          {/* Background Canvas & Initial Hero Picture inside sticky stage so the last frame scrolls off naturally */}
+          <div className="canvas-wrapper" aria-hidden="true">
+            <picture className="hero-initial-picture">
+              <source
+                media="(max-width: 820px)"
+                srcSet="/frames-v4/mobile/frame_001.webp"
+                type="image/webp"
+              />
+              <img
+                src="/frames-v4/desktop/frame_001.webp"
+                alt=""
+                className="hero-initial-img"
+                fetchPriority="high"
+                decoding="async"
+              />
+            </picture>
+            <ScrollyCanvas
+              progress={scrollProgress}
+              prefersReducedMotion={prefersReducedMotion}
+            />
+            <div className="cinematic-vignette" />
+          </div>
+
           <div className="limbo-container">
             {/* ACTO 01: EL ENFOQUE (Cabina del avión · 0% - 24%) */}
             <div className="limbo-act left-aligned" style={getLimboStyle(0, 0.25, true)}>
@@ -403,6 +403,21 @@ function App() {
 
       {/* PIE DE PÁGINA RÍGIDO: A CONTINUACIÓN DEL VIDEO */}
       <footer className="rigid-footer" id="contacto">
+        <picture className="footer-bg-picture" aria-hidden="true">
+          <source
+            media="(max-width: 820px)"
+            srcSet="/images/footer-atmosphere-v1-mobile.webp"
+            type="image/webp"
+          />
+          <img
+            src="/images/footer-atmosphere-v1-desktop.webp"
+            alt=""
+            className="footer-bg-img"
+            loading="lazy"
+            decoding="async"
+          />
+        </picture>
+        <div className="footer-bg-overlay" aria-hidden="true" />
         <div className="rigid-footer-inner">
           {/* Texto motivador de marca personal */}
           <div className="rigid-quote-box">
